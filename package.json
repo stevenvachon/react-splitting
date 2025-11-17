@@ -1,0 +1,49 @@
+{
+  "name": "react-splitting",
+  "description": "A re-implementation of splitting.js for React supporting SSR/SSG.",
+  "version": "1.0.0-rc6",
+  "author": "Steven Vachon <contact@svachon.com> (https://svachon.com)",
+  "repository": "github:stevenvachon/react-splitting",
+  "license": "MIT",
+  "type": "module",
+  "exports": "./index.js",
+  "peerDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/splitting": "^1.0.6",
+    "@vitest/coverage-v8": "^4.0.15",
+    "cssnano": "^7.1.2",
+    "htmlnano": "^2.1.5",
+    "jsdom": "^27.2.0",
+    "prettier": "^3.7.4",
+    "splitting": "^1.1.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  },
+  "scripts": {
+    "build": "prettier --check '*.tsx' && tsc",
+    "test": "npm run test:watch -- --reporter=verbose --run",
+    "test:watch": "vitest dev --coverage --coverage.reporter=lcov --coverage.reporter=text --environment=jsdom --globals"
+  },
+  "files": [
+    "index.d.ts",
+    "index.js",
+    "index.js.map"
+  ],
+  "keywords": [
+    "animation",
+    "char",
+    "split",
+    "splitting",
+    "text",
+    "word"
+  ]
+}
