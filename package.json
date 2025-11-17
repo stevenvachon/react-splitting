@@ -1,0 +1,32 @@
+{
+  "name": "react-splitting",
+  "description": "A re-implementation of splitting.js for React supporting SSR/SSG.",
+  "version": "1.0.0",
+  "author": "Steven Vachon <contact@svachon.com> (https://svachon.com)",
+  "license": "MIT",
+  "type": "module",
+  "exports": "./index.js",
+  "peerDependencies": {
+    "react": "^19.2.0"
+  },
+  "dependencies": {
+    "@types/react": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/react-dom": "^19.2.3",
+    "prettier": "^3.6.2",
+    "react-dom": "^19.2.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.13"
+  },
+  "scripts": {
+    "build": "prettier --check '*.tsx' && tsc",
+    "test": "npm run test:watch -- --reporter=verbose --run",
+    "test:watch": "vitest dev"
+  },
+  "files": [
+    "index.d.ts",
+    "index.js",
+    "index.js.map"
+  ]
+}
