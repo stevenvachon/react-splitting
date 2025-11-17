@@ -1,0 +1,186 @@
+import type { CHARS, COLLAPSED_WHITESPACE, CONTAINER_TAG_NAME, WORDS } from './constants';
+import type { JSX, ReactNode } from 'react';
+
+export type Tags = JSX.IntrinsicElements;
+export type ElementAttributes = Tags[typeof CONTAINER_TAG_NAME] | undefined;
+
+export type CharPropsCallback = (index: number, char: string) => ElementAttributes;
+export type WordPropsCallback = (index: number, word: string) => ElementAttributes;
+
+// For explicit casting
+export type ContentCallback_Chars_CountingWhitespace = (
+  index: number,
+  charOrWhitespace: string
+) => ReactNode;
+
+// For explicit casting
+export type ContentCallback_Chars_DiscountingWhitespace = (
+  index: number | undefined,
+  charOrWhitespace: string
+) => ReactNode;
+
+// For explicit casting
+export type ContentCallback_Chars_Char = (index: number, char: string) => ReactNode;
+
+// For consumer convenience
+export type ContentCallback_Chars = ContentCallback_Chars_DiscountingWhitespace;
+
+// For consumer convenience
+export type ContentCallback_Words = (
+  index: number | undefined,
+  wordOrWhitespace: string
+) => ReactNode;
+
+// For explicit casting
+export type ContentCallback_Words_Whitespace = (
+  index: undefined,
+  whitespace: typeof COLLAPSED_WHITESPACE
+) => ReactNode;
+
+// For explicit casting
+export type ContentCallback_Words_Word = (index: number, word: string) => ReactNode;
+
+interface CharsPropsBase {
+  /**
+   * The splitting method.
+   */
+  by?: typeof CHARS;
+  /**
+   * A callback to customize the properties for each character's element.
+   * It will not be called for whitespace characters when `omitWhitespaceElements` is `true`.
+   */
+  charProps?: CharPropsCallback;
+}
+
+// TODO: some of these are redundant now
+export interface CharsProps_CountingWhitespace_WithoutWordElements extends CharsPropsBase {
+  /**
+   * A callback to customize the contents of each character's element.
+   */
+  content?: ContentCallback_Chars_CountingWhitespace;
+  omitWhitespaceElements?: never;
+  /**
+   * When `true`, the `<span>` element for each word will not be created.
+   */
+  omitWordElements: true;
+  /**
+   * When `true`, whitespace will be counted while indexing characters.
+   */
+  whitespace: true;
+  wordProps?: never;
+}
+
+export interface CharsProps_CountingWhitespace_WithWordElements extends CharsPropsBase {
+  /**
+   * A callback to customize the contents of each character's element.
+   */
+  content?: ContentCallback_Chars_CountingWhitespace;
+  omitWhitespaceElements?: never;
+  /**
+   * When `true`, the `<span>` element for each word will not be created.
+   */
+  omitWordElements?: false;
+  /**
+   * When `true`, whitespace will be counted while indexing characters.
+   */
+  whitespace: true;
+  /**
+   * A callback to customize the properties for each word's element.
+   */
+  wordProps?: WordPropsCallback;
+}
+
+export interface CharsProps_DiscountingWhitespace_WithoutWordElements extends CharsPropsBase {
+  /**
+   * A callback to customize the contents of each character's element.
+   * `index` will be `undefined` when `wordOrWhitespace` is a whitespace-only string.
+   */
+  content?: ContentCallback_Chars_DiscountingWhitespace;
+  /**
+   * When `true`, the `<span>` element for each whitespace character will not be created.
+   */
+  omitWhitespaceElements?: boolean;
+  /**
+   * When `true`, the `<span>` element for each word will not be created.
+   */
+  omitWordElements: true;
+  /**
+   * When `true`, whitespace will be counted while indexing characters.
+   */
+  whitespace?: false;
+  wordProps?: never;
+}
+
+export interface CharsProps_DiscountingWhitespace_WithWordElements extends CharsPropsBase {
+  /**
+   * A callback to customize the contents of each character's element.
+   * `index` will be `undefined` when `wordOrWhitespace` is a whitespace-only string.
+   */
+  content?: ContentCallback_Chars_DiscountingWhitespace;
+  /**
+   * When `true`, the `<span>` element for each whitespace character will not be created.
+   */
+  omitWhitespaceElements?: boolean;
+  /**
+   * When `true`, the `<span>` element for each word will not be created.
+   */
+  omitWordElements?: false;
+  /**
+   * When `true`, whitespace will be counted while indexing characters.
+   */
+  whitespace?: false;
+  /**
+   * A callback to customize the properties for each word's element.
+   */
+  wordProps?: WordPropsCallback;
+}
+
+interface WordsPropsBase {
+  /**
+   * The splitting method.
+   */
+  by: typeof WORDS;
+  /**
+   * A callback to customize the contents of each word's element.
+   * `index` will be `undefined` when `wordOrWhitespace` is a whitespace-only string.
+   */
+  content?: ContentCallback_Words;
+  omitWordElements?: never;
+  whitespace?: never;
+  /**
+   * A callback to customize the properties for each word's element.
+   */
+  wordProps?: WordPropsCallback;
+}
+
+export interface WordsProps_WithoutWhitespaceElements extends WordsPropsBase {
+  charProps?: never;
+  /**
+   * When `true`, the `<span>` element for each whitespace character will not be created.
+   */
+  omitWhitespaceElements: true;
+}
+
+export interface WordsProps_WithWhitespaceElements extends WordsPropsBase {
+  /**
+   * A callback to customize the properties for each character's element.
+   * Note: It _will_ be called even if `by === WORDS` for whitespace characters.
+   */
+  charProps?: CharPropsCallback;
+  /**
+   * When `true`, the `<span>` element for each whitespace character will not be created.
+   */
+  omitWhitespaceElements?: false;
+}
+
+export interface SplittingComponentsBaseProps {
+  children?: ReactNode;
+  /**
+   * A callback that is called after counting is complete.
+   */
+  onCharCount?: (count: number) => void;
+  /**
+   * A callback that is called after counting is complete.
+   */
+  onWordCount?: (count: number) => void;
+}
