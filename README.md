@@ -4,7 +4,10 @@
 
 This is a _re_-implementation because the original works with _real_ DOM nodes. Converting `ReactNode`s to such then back again _might_ preserve most--if not all--attributes, but will definitely _lose all_ React event handlers.
 
-**Note:** Only "chars" and "words" are supported for the `by` property.
+**Notes:**
+
+- Only "chars" and "words" are supported for the `by` property.
+- `key` option was renamed to `cssKey` to avoid conflicts with React's own [`key` property](https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key).
 
 ## Consumer Usage
 
@@ -48,3 +51,8 @@ npm test
 ```shell
 npm run test:watch
 ```
+
+## To Do
+
+- Add coverage.
+- Try using [happy-dom](https://npmjs.com/happy-dom) again. It [didn't support splitting.js](https://github.com/capricorn86/happy-dom/issues/1959).
