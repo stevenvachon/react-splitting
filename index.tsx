@@ -17,15 +17,18 @@ interface PropsBase {
    * The splitting method.
    */
   by?: typeof CHARS | typeof WORDS;
+  /**
+   * Customize the properties for each character's element.
+   */
+  charProps?: {
+    (index: number, isWhitespace: true): JSX.IntrinsicElements['span'];
+    (index: number, isWhitespace: false, value: string): JSX.IntrinsicElements['span'];
+  };
   children?: ReactNode;
   /**
    * When `true`, CSS classes will be rendered.
    */
   cssClasses?: boolean;
-  /**
-   * An optional key used as a prefix on CSS variables.
-   */
-  cssKey?: string;
   /**
    * When `true`, CSS variables will be rendered.
    */
@@ -37,11 +40,19 @@ interface PropsBase {
   /**
    * A callback that is called after counting is complete.
    */
-  onCount?: (wordCount: number, charCount: number) => void;
+  onCharCount?: (count: number) => void;
+  /**
+   * A callback that is called after counting is complete.
+   */
+  onWordCount?: (count: number) => void;
   /**
    * When `true`, whitespace will be counted while indexing characters.
    */
   whitespace?: boolean;
+  /**
+   * Customize the properties for each word's element.
+   */
+  wordProps?: (index: number, value: string) => JSX.IntrinsicElements['span'];
 }
 
 interface WithoutContainer {
@@ -71,20 +82,16 @@ export default <T extends keyof JSX.IntrinsicElements = DEFAULT_CONTAINER>({
   className,
   container,
   cssClasses = false,
-  cssKey = '',
   cssVariables = false,
   dataAttributes = false,
-  onCount,
+  onCharCount,
+  onWordCount,
   style,
   whitespace = false,
   ...domProps
 }: SplittingProps<T>) => {
   if (by !== CHARS && by !== WORDS) {
     throw new TypeError(`Splitting method must be "${CHARS}" or "${WORDS}"`);
-  }
-
-  if (cssKey) {
-    cssKey = `${cssKey}-`;
   }
 
   const {
@@ -95,14 +102,14 @@ export default <T extends keyof JSX.IntrinsicElements = DEFAULT_CONTAINER>({
     const result = splitChildren(children, {
       by,
       cssClasses,
-      cssKey,
       cssVariables,
       dataAttributes,
       whitespace,
     });
-    onCount?.(result.wordCount, result.charCount);
+    onCharCount?.(result.charCount);
+    onWordCount?.(result.wordCount);
     return result;
-  }, [by, children, cssClasses, cssKey, cssVariables, dataAttributes, onCount, whitespace]);
+  }, [by, children, cssClasses, cssVariables, dataAttributes, whitespace]);
 
   if (container) {
     return createElement(
@@ -116,8 +123,8 @@ export default <T extends keyof JSX.IntrinsicElements = DEFAULT_CONTAINER>({
           ...(cssVariables
             ? {
                 // Matched order with original; since tests can't sort CSS variables
-                [`--${cssKey}${WORD}-total`]: wordCount,
-                [`--${cssKey}${CHAR}-total`]: by === CHARS ? charCount : undefined,
+                [`--${WORD}-total`]: wordCount,
+                [`--${CHAR}-total`]: by === CHARS ? charCount : undefined,
               }
             : undefined),
           ...style,
@@ -135,7 +142,7 @@ const WORD = 'word';
 
 const splitChildren = (
   children: ReactNode,
-  props: Omit<PropsBase, 'children' | 'onCount'>,
+  props: Omit<PropsBase, 'children'>,
   count = { chars: 0, words: 0 }
 ): { charCount: number; children: ReactNode; wordCount: number } => {
   const splittedChildren = Children.map(children, child => {
@@ -143,7 +150,7 @@ const splitChildren = (
       child = String(child);
     }
     if (typeof child === 'string') {
-      const { by, cssClasses, cssKey, cssVariables, dataAttributes, whitespace } = props;
+      const { by, cssClasses, cssVariables, dataAttributes, whitespace } = props;
       return child
         .split(/(\s+)/) // Include whitespace delimiters
         .filter(t => t) // Remove empty strings
@@ -163,10 +170,11 @@ const splitChildren = (
                 style={
                   cssVariables && by === CHARS && whitespace
                     ? {
-                        [`--${cssKey}${CHAR}-index`]: count.chars - 1, // 0-based
+                        [`--${CHAR}-index`]: count.chars - 1, // 0-based
                       }
                     : undefined
                 }
+                {...props.charProps?.(count.chars - 1, true)}
               >
                 {/* Collapse whitespace */}{' '}
               </span>
@@ -181,10 +189,11 @@ const splitChildren = (
               style={
                 cssVariables
                   ? {
-                      [`--${cssKey}${WORD}-index`]: count.words - 1, // 0-based
+                      [`--${WORD}-index`]: count.words - 1, // 0-based
                     }
                   : undefined
               }
+              {...props.wordProps?.(count.words - 1, part)}
             >
               {by === CHARS
                 ? [...new Intl.Segmenter().segment(part)].map(({ segment: char }, charIndex) => {
@@ -197,10 +206,11 @@ const splitChildren = (
                         style={
                           cssVariables
                             ? {
-                                [`--${cssKey}${CHAR}-index`]: count.chars - 1, // 0-based
+                                [`--${CHAR}-index`]: count.chars - 1, // 0-based
                               }
                             : undefined
                         }
+                        {...props.charProps?.(count.chars - 1, false, char)}
                       >
                         {char}
                       </span>

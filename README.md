@@ -7,8 +7,7 @@ This is a _re_-implementation because the original works with _real_ DOM nodes. 
 **Notes/Differences:**
 
 - Only "chars" and "words" are supported for the `by` property.
-- The `key` option was renamed to `cssKey` to avoid a conflict with React's own [`key` property](https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key).
-- `cssKey`/`key` is [property hyphenated](https://github.com/shshaw/Splitting/issues/110).
+- The `key` option, CSS classes, CSS variables and `data-*` attributes were omitted in favour of `charProps`, `wordProps`, `onCharCount` and `onWordCount`. You can reproduce the original behavior or completely customize.
 - `<script>` and `<style>` elements are [property ignored](https://github.com/shshaw/Splitting/issues/111).
 
 ## Consumer Usage
@@ -74,7 +73,6 @@ npm run test:watch
 
 ## To Do
 
-- Maybe split out `container` to `<SplittingWithContainer as/>` to avoid type complications.
 - Try using [happy-dom](https://npmjs.com/happy-dom) again. It [didn't support splitting.js](https://github.com/capricorn86/happy-dom/issues/1959).
 
 [npm-image]: https://img.shields.io/npm/v/react-splitting

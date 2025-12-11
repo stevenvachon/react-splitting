@@ -31,10 +31,13 @@ const renderBothToHTML = async (
     const html = renderReactToHTML(
       <Splitting
         {...props}
-        onCount={(w, c) => {
-          charCount = c;
-          wordCount = w;
-          //props.onCount?.(w, c);
+        onCharCount={count => {
+          charCount = count;
+          //props.onCharCount?.(count);
+        }}
+        onWordCount={count => {
+          wordCount = count;
+          //props.onWordCount?.(count);
         }}
       />
     );
@@ -49,10 +52,10 @@ const renderBothToHTML = async (
       children,
       container,
       cssClasses,
-      cssKey,
       cssVariables,
       dataAttributes,
-      onCount, // Unused, but omits from `domProps`
+      onCharCount, // Unused, but omits from `domProps`
+      onWordCount, // Unused, but omits from `domProps`
       whitespace,
       ...domProps
     } = props;
@@ -68,7 +71,6 @@ const renderBothToHTML = async (
     //console.debug('BEFORE ORIGINAL:', div.outerHTML);
     const [{ chars, words }] = splitting({
       by,
-      key: cssKey,
       target,
       whitespace,
     });
@@ -90,19 +92,10 @@ const renderBothToHTML = async (
                       )
                       .join(' ');
                   }
-                  // TODO: remove when possible: https://github.com/shshaw/Splitting/issues/110
-                  if (cssKey && hasOwnNonNullish(node.attrs, 'style')) {
-                    node.attrs.style = node.attrs.style.replaceAll(
-                      new RegExp(`---${cssKey}(char|word)-(index|total):(\\s*\\d+;?)`, 'g'),
-                      `--${cssKey}-$1-$2:$3`
-                    );
-                  }
                   // Remove CSS variables if the component does not render them
                   if (!cssVariables && hasOwnNonNullish(node.attrs, 'style')) {
                     node.attrs.style = node.attrs.style.replaceAll(
-                      cssKey
-                        ? new RegExp(`--${cssKey}-(char|word)-(index|total):\\s*\\d+;?`, 'g')
-                        : /--(char|word)-(index|total):\s*\d+;?/g,
+                      /--(char|word)-(index|total):\s*\d+;?/g,
                       ''
                     );
                   }
@@ -193,24 +186,21 @@ describe('by', () => {
       }
 
       // TODO: uncomment whitespace tests when possible: https://github.com/shshaw/Splitting/issues/76
-      //it('supports container, cssClasses, cssKey, cssVariables, dataAttributes and whitespace props', () =>
-      it('supports container, cssClasses, cssKey, cssVariables and dataAttributes props', () => {
+      //it('supports container, cssClasses, cssVariables, dataAttributes and whitespace props', () =>
+      it('supports container, cssClasses, cssVariables and dataAttributes props', () => {
         const variants = [
           { container: 'button' },
           { container: 'button', type: 'button' },
           { container: 'div' },
           { container: 'div', cssClasses: true },
           { container: 'div', cssVariables: true },
-          { container: 'div', cssVariables: true, cssKey: 'custom' },
           { cssClasses: true },
           { cssVariables: true },
-          { cssVariables: true, cssKey: 'custom' },
           //{ cssVariables: true, whitespace: true },
           { dataAttributes: true },
           //{ whitespace: true },
           {
             cssClasses: true,
-            cssKey: 'custom',
             cssVariables: true,
             dataAttributes: true,
             //whitespace: true,
@@ -218,7 +208,6 @@ describe('by', () => {
           {
             container: 'div',
             cssClasses: true,
-            cssKey: 'custom',
             cssVariables: true,
             dataAttributes: true,
             //whitespace: true,
@@ -235,7 +224,6 @@ describe('by', () => {
             { whitespace: true },
             {
               cssClasses: true,
-              cssKey: 'custom',
               cssVariables: true,
               dataAttributes: true,
               whitespace: true,

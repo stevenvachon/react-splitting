@@ -1,7 +1,7 @@
 {
   "name": "react-splitting",
   "description": "A re-implementation of splitting.js for React supporting SSR/SSG.",
-  "version": "1.0.0-rc6",
+  "version": "1.0.0-rc7",
   "author": "Steven Vachon <contact@svachon.com> (https://svachon.com)",
   "repository": "github:stevenvachon/react-splitting",
   "license": "MIT",
