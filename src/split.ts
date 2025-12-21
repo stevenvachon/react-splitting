@@ -4,6 +4,7 @@ import type {
   CharsProps_DiscountingWhitespace_WithoutWordElements,
   CharsProps_DiscountingWhitespace_WithWordElements,
   ContentCallback_Chars_Char,
+  ContentCallback_Chars_DiscountingWhitespace,
   ContentCallback_Words_Whitespace,
   ContentCallback_Words_Word,
   WordsProps_WithoutWhitespaceElements,
@@ -13,9 +14,7 @@ import { CHARS, COLLAPSED_WHITESPACE, CONTAINER_TAG_NAME, WORDS } from './consta
 import { Children, cloneElement, createElement, isValidElement, type ReactNode } from 'react';
 import { SetRequired } from 'type-fest';
 
-export { CHARS, COLLAPSED_WHITESPACE, WORDS };
-
-export type SplitChildrenProps =
+export type SplitBaseProps =
   | CharsProps_CountingWhitespace_WithoutWordElements
   | CharsProps_CountingWhitespace_WithWordElements
   | CharsProps_DiscountingWhitespace_WithoutWordElements
@@ -23,30 +22,38 @@ export type SplitChildrenProps =
   | WordsProps_WithoutWhitespaceElements
   | WordsProps_WithWhitespaceElements;
 
-type StrictSplitChildrenProps = SetRequired<SplitChildrenProps, 'by'>;
+export type SplitProps = SplitBaseProps & {
+  /**
+   * When `true`, some questionable behaviors from the original are preserved.
+   */
+  quirks?: boolean;
+};
 
-export default (children: ReactNode, { by = CHARS, ...props }: SplitChildrenProps = {}) => {
+type StrictSplitProps = SetRequired<SplitProps, 'by'>;
+
+export default (input: ReactNode, { by = CHARS, ...props }: SplitProps = {}) => {
   if (by !== CHARS && by !== WORDS) {
     throw new TypeError(`Splitting method must be "${CHARS}" or "${WORDS}"`);
   }
-  return splitChildren(children, { by, ...props } as StrictSplitChildrenProps); // Ugh
+  return split(input, { by, ...props } as StrictSplitProps); // Ugh
 };
 
-const splitChildren = (
-  children: ReactNode,
-  props: StrictSplitChildrenProps,
+const split = (
+  input: ReactNode,
+  props: StrictSplitProps,
   count = { chars: 0, words: 0 }
-): { charCount: number; children: ReactNode; wordCount: number } => {
+): { charCount: number; result: ReactNode; wordCount: number } => {
   const {
     by,
     charProps,
     content,
-    omitWhitespaceElements,
-    omitWordElements,
-    whitespace,
+    omitWhitespaceElements = false,
+    omitWordElements = false,
+    quirks = false,
+    whitespace = false,
     wordProps,
   } = props;
-  const splittedChildren = Children.map(children, child => {
+  const splitInput = Children.map(input, child => {
     if (typeof child === 'bigint' || typeof child === 'boolean' || typeof child === 'number') {
       child = String(child);
     }
@@ -56,7 +63,7 @@ const splitChildren = (
         .filter(t => t) // Remove empty strings
         .map((part, partIndex) => {
           if (/^\s+$/.test(part)) {
-            if (!partIndex) {
+            if (!partIndex && quirks) {
               return; // Strange, but conforms to original behavior
             }
             if (by === CHARS && whitespace) {
@@ -66,7 +73,10 @@ const splitChildren = (
               ? by === CHARS
                 ? whitespace
                   ? content(count.chars - 1, COLLAPSED_WHITESPACE)
-                  : content(undefined, COLLAPSED_WHITESPACE)
+                  : (content as ContentCallback_Chars_DiscountingWhitespace)(
+                      undefined,
+                      COLLAPSED_WHITESPACE
+                    )
                 : (content as ContentCallback_Words_Whitespace)(undefined, COLLAPSED_WHITESPACE)
               : COLLAPSED_WHITESPACE;
             return omitWhitespaceElements
@@ -111,18 +121,14 @@ const splitChildren = (
       child.type !== 'style'
     ) {
       // Preserve the element, but replace its children
-      return cloneElement(
-        child,
-        child.props,
-        splitChildren(child.props.children, props, count).children
-      );
+      return cloneElement(child, child.props, split(child.props.children, props, count).result);
     } else {
       return child;
     }
   });
   return {
     charCount: count.chars,
-    children: splittedChildren,
+    result: splitInput,
     wordCount: count.words,
   };
 };

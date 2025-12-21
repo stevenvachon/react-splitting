@@ -13,6 +13,6 @@
     "strict": true,
     "target": "es2024"
   },
-  "exclude": ["src/*.d.ts", "src/*.test.ts", "src/*.test.tsx", "src/testHelpers.tsx"],
-  "include": ["src/*.ts", "src/*.tsx"]
+  "exclude": ["src/**/*.d.ts", "src/**/*.test.ts", "src/**/*.test.tsx", "src/testHelpers.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

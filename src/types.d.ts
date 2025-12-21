@@ -2,6 +2,7 @@ import type { CHARS, COLLAPSED_WHITESPACE, CONTAINER_TAG_NAME, WORDS } from './c
 import type { JSX, ReactNode } from 'react';
 
 export type Tags = JSX.IntrinsicElements;
+export type DomProps<T extends keyof Tags> = Tags[T];
 export type ElementAttributes = Tags[typeof CONTAINER_TAG_NAME] | undefined;
 
 export type CharPropsCallback = (index: number, char: string) => ElementAttributes;
@@ -52,7 +53,6 @@ interface CharsPropsBase {
   charProps?: CharPropsCallback;
 }
 
-// TODO: some of these are redundant now
 export interface CharsProps_CountingWhitespace_WithoutWordElements extends CharsPropsBase {
   /**
    * A callback to customize the contents of each character's element.
@@ -173,14 +173,6 @@ export interface WordsProps_WithWhitespaceElements extends WordsPropsBase {
   omitWhitespaceElements?: false;
 }
 
-export interface SplittingComponentsBaseProps {
+export interface ComponentsBaseProps {
   children?: ReactNode;
-  /**
-   * A callback that is called after counting is complete.
-   */
-  onCharCount?: (count: number) => void;
-  /**
-   * A callback that is called after counting is complete.
-   */
-  onWordCount?: (count: number) => void;
 }

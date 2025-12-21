@@ -1,15 +1,14 @@
 {
   "name": "react-splitting",
   "description": "A re-implementation of splitting.js for React supporting SSR/SSG.",
-  "version": "1.0.0-rc9",
+  "version": "1.0.0-rc11",
   "author": "Steven Vachon <contact@svachon.com> (https://svachon.com)",
   "repository": "github:stevenvachon/react-splitting",
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": "./src/Splitting.js",
-    "./splitChildren": "./src/splitChildren.js",
-    "./with-meta": "./src/SplittingWithMeta.js"
+    ".": "./src/splitting/index.js",
+    "./with-meta": "./src/splittingWithMeta/index.js"
   },
   "dependencies": {
     "type-fest": "^5.3.1"
@@ -34,7 +33,7 @@
     "vitest": "^4.0.15"
   },
   "scripts": {
-    "build": "prettier --check 'src/*.tsx' && tsc",
+    "build": "prettier --check 'src/*/*.{ts,tsx}' && tsc",
     "prepublishOnly": "npm run build && npm test",
     "test": "npm run test:watch -- --reporter=verbose --run",
     "test:watch": "vitest dev --coverage --coverage.exclude=src/testHelpers.tsx --coverage.reporter=lcov --coverage.reporter=text --environment=jsdom --globals"
@@ -43,20 +42,33 @@
     "src/constants.d.ts",
     "src/constants.js",
     "src/constants.js.map",
-    "src/splitChildren.d.ts",
-    "src/splitChildren.js",
-    "src/splitChildren.js.map",
-    "src/Splitting.d.ts",
-    "src/Splitting.js",
-    "src/Splitting.js.map",
-    "src/SplittingWithMeta.d.ts",
-    "src/SplittingWithMeta.js",
-    "src/SplittingWithMeta.js.map",
+    "src/split.d.ts",
+    "src/split.js",
+    "src/split.js.map",
+    "src/splitting/Component.d.ts",
+    "src/splitting/Component.js",
+    "src/splitting/Component.js.map",
+    "src/splitting/function.d.ts",
+    "src/splitting/function.js",
+    "src/splitting/function.js.map",
+    "src/splitting/index.d.ts",
+    "src/splitting/index.js",
+    "src/splitting/index.js.map",
+    "src/splittingWithMeta/Component.d.ts",
+    "src/splittingWithMeta/Component.js",
+    "src/splittingWithMeta/Component.js.map",
+    "src/splittingWithMeta/function.d.ts",
+    "src/splittingWithMeta/function.js",
+    "src/splittingWithMeta/function.js.map",
+    "src/splittingWithMeta/index.d.ts",
+    "src/splittingWithMeta/index.js",
+    "src/splittingWithMeta/index.js.map",
     "src/types.d.ts"
   ],
   "keywords": [
     "animation",
     "char",
+    "react",
     "split",
     "splitting",
     "text",

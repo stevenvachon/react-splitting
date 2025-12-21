@@ -2,16 +2,14 @@ import type {
   CharPropsCallback,
   CharsProps_CountingWhitespace_WithWordElements,
   CharsProps_DiscountingWhitespace_WithWordElements,
-  SplittingComponentsBaseProps,
+  DomProps,
   Tags,
   WordPropsCallback,
   WordsProps_WithWhitespaceElements,
-} from './types';
-import { CHARS, COLLAPSED_WHITESPACE, WORDS } from './constants';
-import { createElement, type ComponentPropsWithoutRef, useEffect, useRef } from 'react';
-import splitChildren from './splitChildren';
-
-export { CHARS, COLLAPSED_WHITESPACE, WORDS };
+} from '../types';
+import { CHARS, COLLAPSED_WHITESPACE, WORDS } from '../constants';
+import { createElement, type ReactNode } from 'react';
+import split from '../split';
 
 const CHAR = 'char';
 const WORD = 'word';
@@ -22,14 +20,12 @@ type OmittedProps =
   | 'omitWhitespaceElements'
   | 'omitWordElements'
   | 'wordProps';
-type DomProps<T extends keyof Tags> = Omit<ComponentPropsWithoutRef<T>, 'children'>;
 
-export type SplittingWithMetaProps<T extends keyof Tags> = (
+export type SplittingWithMetaFunctionProps<T extends keyof Tags> = (
   | Omit<CharsProps_CountingWhitespace_WithWordElements, OmittedProps>
   | Omit<CharsProps_DiscountingWhitespace_WithWordElements, OmittedProps>
   | Omit<WordsProps_WithWhitespaceElements, OmittedProps>
 ) &
-  SplittingComponentsBaseProps &
   DomProps<T> & {
     /**
      * The containing element's tag name.
@@ -42,23 +38,21 @@ export type SplittingWithMetaProps<T extends keyof Tags> = (
   };
 
 /**
- * Split children by words or characters.
+ * Split text and elements by words or characters.
  * A re-implementation of splitting.js for React supporting SSR/SSG.
  */
-export default <T extends keyof Tags>({
-  as,
-  by = CHARS,
-  children,
-  className,
-  cssKey,
-  onCharCount,
-  onWordCount,
-  style,
-  whitespace,
-  ...domProps
-}: SplittingWithMetaProps<T>) => {
-  const isFirstRender = useRef(true);
-
+export default <T extends keyof Tags>(
+  input: ReactNode,
+  {
+    as,
+    by = CHARS,
+    className,
+    cssKey,
+    style,
+    whitespace,
+    ...domProps
+  }: SplittingWithMetaFunctionProps<T>
+) => {
   cssKey = cssKey ? `${cssKey}-` : '';
 
   const charProps: CharPropsCallback = (i, char) => ({
@@ -81,40 +75,23 @@ export default <T extends keyof Tags>({
     },
   });
 
+  const quirks = true;
+
   const {
     charCount,
-    children: splittedChildren,
+    result: splitInput,
     wordCount,
-  } = splitChildren(
-    children,
-    by === CHARS ? { by, charProps, wordProps, whitespace } : { by, charProps, wordProps }
+  } = split(
+    input,
+    by === CHARS
+      ? { by, charProps, quirks, wordProps, whitespace }
+      : { by, charProps, quirks, wordProps }
   );
 
-  const callCallbacks = () => {
-    if (by === CHARS || by === undefined) {
-      onCharCount?.(charCount);
-    }
-    onWordCount?.(wordCount);
-  };
-
-  // Supports SSR
-  if (isFirstRender.current) {
-    callCallbacks();
-  }
-
-  // Non-SSR
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-    } else {
-      callCallbacks();
-    }
-  }, [charCount, onCharCount, onWordCount, wordCount]);
-
-  return createElement(
+  const result = createElement(
     as,
     {
-      ...(domProps as DomProps<T>), // Ugh
+      ...(domProps as Omit<DomProps<T>, 'className' | 'style'>), // Ugh
       className: [by === CHARS ? CHARS : '', 'splitting', WORDS, className]
         .filter(s => s)
         .join(' '),
@@ -125,6 +102,8 @@ export default <T extends keyof Tags>({
         ...style,
       },
     },
-    splittedChildren
+    splitInput
   );
+
+  return { charCount, result, wordCount };
 };

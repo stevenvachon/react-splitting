@@ -1,9 +1,15 @@
-import { Children, createElement } from 'react';
+import {
+  CHARS,
+  splittingWithMeta,
+  type SplittingWithMetaFunctionProps,
+  WORDS,
+} from './splittingWithMeta/index';
+import { Children, createElement, ReactNode } from 'react';
 import { expect } from 'vitest';
 import htmlnano from 'htmlnano';
+import originalSplitting from 'splitting';
 import { renderToStaticMarkup } from 'react-dom/server';
-import splitting from 'splitting';
-import SplittingWithMeta, { CHARS, type SplittingWithMetaProps, WORDS } from './SplittingWithMeta';
+import type { SetOptional } from 'type-fest';
 import type { Tags } from './types';
 
 export const DEFAULT_TAG = 'div';
@@ -25,7 +31,10 @@ const hasOwnNonNullish = <T extends object, K extends keyof T>(
   Object.prototype.hasOwnProperty.call(object, property) &&
   (object as any)[property] != null;
 
-type NormalizeHTMLOptions<T extends keyof Tags> = Pick<SplittingWithMetaProps<T>, 'cssKey'> & {
+type NormalizeHTMLOptions<T extends keyof Tags> = Pick<
+  SplittingWithMetaFunctionProps<T>,
+  'cssKey'
+> & {
   removeCSSClasses?: boolean;
   removeCSSVariables?: boolean;
   removeDataAttributes?: boolean;
@@ -86,42 +95,37 @@ const normalizeHTML = <T extends keyof Tags>(
     })
     .then(({ html }) => html);
 
+type SplittingWithMetaFunctionPropsWithInput<T extends keyof Tags> =
+  SplittingWithMetaFunctionProps<T> & {
+    input: ReactNode;
+  };
+
 /**
  * Render both the React component and the original splitting.js library.
  */
 const renderBothToNormalizedHTML = async <T extends keyof Tags>({
   as,
   by,
-  children,
   cssKey,
-  onCharCount,
-  onWordCount,
+  input,
   whitespace,
   ...domProps
-}: SplittingWithMetaProps<T>) => ({
+}: SplittingWithMetaFunctionPropsWithInput<T>) => ({
   /**
    * The result of the React component.
    */
   component: await (async () => {
-    let charCount = 0;
-    let wordCount = 0;
-    const props = {
-      as,
-      by,
-      children,
-      cssKey,
-      onCharCount: count => {
-        charCount = count;
-        onCharCount?.(count);
-      },
-      onWordCount: count => {
-        wordCount = count;
-        onWordCount?.(count);
-      },
-      whitespace,
-      ...domProps,
-    } as SplittingWithMetaProps<T>; // Ugh
-    const html = await renderReactToHTML(<SplittingWithMeta {...props} />);
+    const { charCount, result, wordCount } = splittingWithMeta(
+      input,
+      {
+        as,
+        by,
+        cssKey,
+        whitespace,
+        ...domProps,
+      } as SplittingWithMetaFunctionProps<T> // Ugh
+    );
+    const html = await renderReactToNormalizedHTML(result);
     return { charCount, html, wordCount };
   })(),
   /**
@@ -136,9 +140,9 @@ const renderBothToNormalizedHTML = async <T extends keyof Tags>({
       target.setAttribute(name, value);
     }
     // Add attributes -- END
-    target.innerHTML = renderToStaticMarkup(children);
+    target.innerHTML = renderToStaticMarkup(input);
     //console.debug('BEFORE ORIGINAL:', target.outerHTML);
-    const [{ chars, words }] = splitting({ by, key: cssKey, target, whitespace });
+    const [{ chars, words }] = originalSplitting({ by, key: cssKey, target, whitespace });
     //console.debug('AFTER ORIGINAL (before normalization):', target.outerHTML);
     return {
       charCount: chars?.length ?? 0,
@@ -162,15 +166,15 @@ const renderReactToNormalizedHTML = async <T extends keyof Tags>(
   }
 };
 
-const renderReactToHTML = (element: Parameters<typeof renderReactToNormalizedHTML>[0]) =>
-  renderReactToNormalizedHTML(element, false);
+const renderReactToHTML = (element: Parameters<typeof renderToStaticMarkup>[0]) =>
+  renderToStaticMarkup(element);
 
 export { renderReactToHTML as renderToHTML, renderReactToNormalizedHTML as renderToNormalizedHTML };
 
-export const EMOJI_CHILDREN = <>text 👨‍👩‍👧‍👦⭐️</>;
-export const MULTIPLE_WORDS_CHILDREN = <>text1 text2</>;
-export const SINGLE_CHARACTER_CHILDREN = <>C</>;
-export const SINGLE_WORD_CHILDREN = <>text</>;
+export const EMOJI_INPUT = <>text 👨‍👩‍👧‍👦⭐️</>;
+export const MULTIPLE_WORDS_INPUT = <>text1 text2</>;
+export const SINGLE_CHARACTER_INPUT = <>C</>;
+export const SINGLE_WORD_INPUT = <>text</>;
 
 export const STRUCTURED_CHILDREN = (() => {
   //const Component = () => <button>text3 text4</button>;
@@ -194,18 +198,18 @@ export const STRUCTURED_CHILDREN = (() => {
  * original splitting.js library.
  */
 export const assertParity = async <T extends keyof Tags = typeof DEFAULT_TAG>({
-  children = [
-    SINGLE_CHARACTER_CHILDREN,
-    SINGLE_WORD_CHILDREN,
-    MULTIPLE_WORDS_CHILDREN,
-    EMOJI_CHILDREN,
+  input = [
+    SINGLE_CHARACTER_INPUT,
+    SINGLE_WORD_INPUT,
+    MULTIPLE_WORDS_INPUT,
+    EMOJI_INPUT,
     STRUCTURED_CHILDREN,
   ],
   ...props
-}: SplittingWithMetaProps<T>) => {
-  for (const c of Children.toArray(children)) {
+}: SetOptional<SplittingWithMetaFunctionPropsWithInput<T>, 'input'>) => {
+  for (const elm of Children.toArray(input)) {
     const { component, original } = await renderBothToNormalizedHTML(
-      { children: c, ...props } as SplittingWithMetaProps<T> // Ugh
+      { input: elm, ...props } as SplittingWithMetaFunctionPropsWithInput<T> // Ugh
     );
     //console.debug({
     //  '<SplittingWithMeta />': component.html,

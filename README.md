@@ -4,12 +4,17 @@
 
 This is a _re_-implementation because the original works with _real_ DOM nodes. Converting `ReactNode`s to such then back again _might_ preserve most--if not all--attributes, but will definitely _lose all_ React event handlers.
 
-**Notes/Differences:**
+**Differences:**
 
 - Only "chars" and "words" are supported for the `by` property.
 - `<script>` and `<style>` elements are [property ignored](https://github.com/shshaw/Splitting/issues/111).
 - The `key` option was renamed to `cssKey` to avoid a conflict with React's own [`key` property](https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key).
   - It is [properly prefixed](https://github.com/shshaw/Splitting/issues/110).
+
+**Notes:**
+
+- This library comes in two variants: one with "meta" and one without. **The "meta" variant is a drop-in replacement** for the original library as it replicates its CSS classes, variables and `data-*` attributes.
+- Each variant can be used as a **component**--which offers nothing additional--or as a **function**--which adds counts for characters & words and **access to data before it's rendered**.
 
 ## Consumer Usage
 
@@ -19,12 +24,12 @@ This is a _re_-implementation because the original works with _real_ DOM nodes. 
 npm install react-splitting
 ```
 
-### `<Splitting />`:
+### `<Splitting />` / `splitting()`
 
-The lightweight, modernized component which can be completely customized.
+Lightweight and completely customizable.
 
 ```tsx
-import Splitting, { CHARS, WORDS } from 'react-splitting';
+import { CHARS, Splitting, WORDS } from 'react-splitting';
 
 export default () => (
   <>
@@ -57,18 +62,50 @@ export default () => (
 );
 ```
 
-### `<SplittingWithMeta />`:
+```tsx
+import { splitting, WORDS } from 'react-splitting';
 
-The extended component which adds all of the original metadata to each element, including the container element (`as` prop).
+export default () => {
+  const { charCount, result, wordCount } = splitting(
+    <>
+      Text <strong>split</strong> by <em>words</em>.
+    </>,
+    {
+      by: WORDS,
+      charProps: i => ({ className: 'char', style: { '--char-index': i } }),
+      wordProps: i => ({ className: 'word', style: { '--word-index': i } }),
+    }
+  );
+  return <p>{result}</p>;
+};
+```
+
+### `<SplittingWithMeta />` / `splittingWithMeta()`
+
+Drop-in replacement.
 
 ```tsx
-import SplittingWithMeta from 'react-splitting/with-meta';
+import { SplittingWithMeta } from 'react-splitting/with-meta';
 
 export default () => (
-  <SplittingWithMeta as="div" onCharCount={console.log} onWordCount={console.log}>
+  <SplittingWithMeta as="div">
     Text with <strong>added metadata</strong>, split by <em>characters</em>.
   </SplittingWithMeta>
 );
+```
+
+```tsx
+import { splittingWithMeta, WORDS } from 'react-splitting/with-meta';
+
+export default () => {
+  const { charCount, result, wordCount } = splittingWithMeta(
+    <>
+      Text <strong>split</strong> by <em>words</em>.
+    </>,
+    { as: 'div', by: WORDS }
+  );
+  return result;
+};
 ```
 
 ## Development Usage
