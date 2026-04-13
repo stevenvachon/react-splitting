@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.check.json",
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "react"
-  },
-  "include": ["src/**/*.test.tsx", "src/testHelpers.tsx"]
-}

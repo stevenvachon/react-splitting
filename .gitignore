@@ -39,12 +39,13 @@ node_modules/
 .env.*
 !.env.example
 
+# CSpell
+.cspellcache
+
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
 # PROJECT
+dist/
 package-lock.json
-src/**/*.d.ts
-src/**/*.js
-src/**/*.js.map
-!src/types.d.ts
+.vscode

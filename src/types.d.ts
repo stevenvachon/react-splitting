@@ -1,4 +1,4 @@
-import type { COLLAPSED_WHITESPACE, SEGMENT_TAG_NAME, Segmentation } from './constants.js'; // Not *.ts because this file is not compiled
+import type { COLLAPSED_WHITESPACE, SEGMENT_TAG_NAME, Segmentation } from './constants';
 import type { JSX, ReactNode } from 'react';
 
 export type Tags = JSX.IntrinsicElements;
