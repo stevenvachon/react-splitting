@@ -1,4 +1,3 @@
-import { COLLAPSED_WHITESPACE, SEGMENT_TAG_NAME, Segmentation } from './constants';
 import type {
   CharsProps_CountingWhitespace_WithoutWordElements,
   CharsProps_CountingWhitespace_WithWordElements,
@@ -10,7 +9,8 @@ import type {
   WordsProps_WithWhitespaceElements,
 } from './types';
 import { Children, cloneElement, createElement, isValidElement, type ReactNode } from 'react';
-import { SetRequired } from 'type-fest';
+import { COLLAPSED_WHITESPACE, SEGMENT_TAG_NAME, Segmentation } from './constants';
+import type { SetRequired } from 'type-fest';
 
 export type SplitBaseProps =
   | CharsProps_CountingWhitespace_WithoutWordElements
@@ -64,7 +64,7 @@ const split = (
     whitespace = false,
     wordProps,
   } = props;
-  const splitInput = Children.map(input, child => {
+  const segments = Children.map(input, child => {
     if (typeof child === 'bigint' || typeof child === 'boolean' || typeof child === 'number') {
       child = String(child);
     }
@@ -73,7 +73,8 @@ const split = (
         quirks
           ? // Split by and include whitespace delimiters
             child.split(WHITESPACE_CAPTURED).filter(isNotEmptyString)
-          : [...new Intl.Segmenter(locale, WORD_GRANULARITY).segment(child)].map(
+          : Array.from(
+              new Intl.Segmenter(locale, WORD_GRANULARITY).segment(child),
               ({ segment }) => segment
             )
       ).map((segment, segmentIndex) => {
@@ -103,7 +104,7 @@ const split = (
         count.words++;
         const charOrWordContent =
           by === Segmentation.CHARS
-            ? [...new Intl.Segmenter().segment(segment)].map(({ segment: char }, charIndex) => {
+            ? Array.from(new Intl.Segmenter().segment(segment), ({ segment: char }, charIndex) => {
                 count.chars++;
                 return createElement(
                   SEGMENT_TAG_NAME,
@@ -138,7 +139,7 @@ const split = (
   });
   return {
     charCount: count.chars,
-    segments: splitInput,
+    segments,
     wordCount: count.words,
   };
 };

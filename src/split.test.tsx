@@ -66,6 +66,7 @@ describe('by', () => {
           <></>,
           0,
           1,
+          1n,
           true,
           false,
           null,
@@ -216,7 +217,7 @@ describe('by', () => {
     ['non-existent', null, 0, [], {}].map(by =>
       expect(
         () =>
-          // @ts-expect-error unsupported values
+          // @ts-expect-error -- unsupported values
           split(MULTIPLE_WORDS_INPUT, { by }).result
       ).toThrow(TypeError)
     ));
@@ -225,7 +226,7 @@ describe('by', () => {
 describe('charProps', () => {
   it('works', () => {
     const charProps: CharPropsCallback = (i, char) =>
-      // @ts-expect-error -- TypeScript may never support data-* attrs
+      // @ts-expect-error -- unknown data-* attrs
       ({
         'data-char': char,
         'data-char-index': char === COLLAPSED_WHITESPACE ? undefined : i,
@@ -360,9 +361,19 @@ describe('content', () => {
   it('supports whitespace prop', () => {
     const content = vi.fn();
     split(MULTIPLE_WORDS_INPUT, { by: Segmentation.CHARS, content, whitespace: true });
-    content.mock.calls.forEach(call =>
-      expect(call).toEqual([expect.any(Number), expect.any(String)])
-    );
+    expect(content.mock.calls).toEqual([
+      [0, 't'],
+      [1, 'e'],
+      [2, 'x'],
+      [3, 't'],
+      [4, '1'],
+      [5, COLLAPSED_WHITESPACE],
+      [6, 't'],
+      [7, 'e'],
+      [8, 'x'],
+      [9, 't'],
+      [10, '2'],
+    ]);
   });
 });
 
@@ -423,7 +434,7 @@ describe('omitWordElements', () => {
 describe('wordProps', () => {
   it('works', () => {
     const wordProps: WordPropsCallback = (i, word) =>
-      // @ts-expect-error -- TypeScript may never support data-* attrs
+      // @ts-expect-error -- unknown data-* attrs
       ({
         'data-word': word,
         'data-word-index': i,

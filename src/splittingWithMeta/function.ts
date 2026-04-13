@@ -15,11 +15,7 @@ const CHAR = 'char';
 const WORD = 'word';
 
 type OmittedProps =
-  | 'charProps'
-  | 'content'
-  | 'omitWhitespaceElements'
-  | 'omitWordElements'
-  | 'wordProps';
+  'charProps' | 'content' | 'omitWhitespaceElements' | 'omitWordElements' | 'wordProps';
 
 export type SplittingWithMetaFunctionProps<T extends keyof Tags> = (
   | Omit<CharsProps_CountingWhitespace_WithWordElements, OmittedProps>

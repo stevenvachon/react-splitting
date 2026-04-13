@@ -13,8 +13,15 @@ import type { Tags } from './types';
 
 export const DEFAULT_TAG = 'div';
 
+/**
+ * Determine if the input is `Segmentation.CARS`, or the value (`undefined`) that
+ * defaults to such in the base `split()`.
+ */
 export const byIsChars = (by?: Segmentation) => by === Segmentation.CHARS || by === undefined;
 
+/**
+ * Concatenates encapsulating quotes to `Segmentation` input values but not to `undefined`.
+ */
 export const formatBy = (by?: Segmentation) => (typeof by === 'string' ? `"${by}"` : String(by));
 
 // TODO: https://github.com/sindresorhus/type-fest/issues/1311
@@ -159,20 +166,26 @@ const renderBothToNormalizedHTML = async <T extends keyof Tags>({
   })(),
 });
 
-// TODO: use `Promise.try` when possible (stupid TypeScript)
-const renderReactToNormalizedHTML = async <T extends keyof Tags>(
+/**
+ * Render to a normalized HTML string for more accurate matching/comparison.
+ */
+const renderReactToNormalizedHTML = <T extends keyof Tags>(
   element: Parameters<typeof renderToStaticMarkup>[0],
   normalize?: false | NormalizeHTMLOptions<T>
-) => {
-  const html = renderToStaticMarkup(element);
-  if (normalize === false) {
-    return html;
-  } else {
-    //console.debug('AFTER REACT (before normalization):', html);
-    return normalizeHTML(html, normalize);
-  }
-};
+) =>
+  Promise.try(() => {
+    const html = renderToStaticMarkup(element);
+    if (normalize === false) {
+      return html;
+    } else {
+      //console.debug('AFTER REACT (before normalization):', html);
+      return normalizeHTML(html, normalize);
+    }
+  });
 
+/**
+ * Render to an HTML string.
+ */
 const renderReactToHTML = (element: Parameters<typeof renderToStaticMarkup>[0]) =>
   renderToStaticMarkup(element);
 
