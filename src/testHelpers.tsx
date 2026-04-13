@@ -159,19 +159,19 @@ const renderBothToNormalizedHTML = async <T extends keyof Tags>({
   })(),
 });
 
-// TODO: use `Promise.try` when possible (stupid TypeScript)
-const renderReactToNormalizedHTML = async <T extends keyof Tags>(
+const renderReactToNormalizedHTML = <T extends keyof Tags>(
   element: Parameters<typeof renderToStaticMarkup>[0],
   normalize?: false | NormalizeHTMLOptions<T>
-) => {
-  const html = renderToStaticMarkup(element);
-  if (normalize === false) {
-    return html;
-  } else {
-    //console.debug('AFTER REACT (before normalization):', html);
-    return normalizeHTML(html, normalize);
-  }
-};
+) =>
+  Promise.try(() => {
+    const html = renderToStaticMarkup(element);
+    if (normalize === false) {
+      return html;
+    } else {
+      //console.debug('AFTER REACT (before normalization):', html);
+      return normalizeHTML(html, normalize);
+    }
+  });
 
 const renderReactToHTML = (element: Parameters<typeof renderToStaticMarkup>[0]) =>
   renderToStaticMarkup(element);

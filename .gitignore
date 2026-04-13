@@ -48,3 +48,4 @@ src/**/*.d.ts
 src/**/*.js
 src/**/*.js.map
 !src/types.d.ts
+.vscode

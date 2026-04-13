@@ -32,7 +32,7 @@
     "prettier": "^3.8.1",
     "splitting": "^1.1.0",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.2",
     "vitest": "^4.0.18"
   },
   "scripts": {

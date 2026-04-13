@@ -136,8 +136,9 @@ npm run test:watch
 
 ## To Do
 
-- Probably add ESLint.
+- Probably add ESLint/Biome.
 - Remove [tsc-alias](https://npmjs.com/tsc-alias) and use `rewriteRelativeImportExtensions` with `allowImportingTsExtensions` [when possible](https://github.com/microsoft/TypeScript/issues/61037).
+  - At which point, compile to _dist/_ instead of _src/_.
 
 [npm-image]: https://img.shields.io/npm/v/react-splitting
 [npm-url]: https://npmjs.org/react-splitting
